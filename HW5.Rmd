@@ -1,0 +1,88 @@
+---
+title: "HW5"
+author: "Peter Gray"
+date: "4/29/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(MASS)
+library(boot)
+library(readxl)
+attach(Boston)
+StdErrFun = function(variable, index){ sd(variable[index])/sqrt(length(variable[index]))}
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(Boston)
+mu = mean(medv)
+mu
+StdErrFun(medv)
+
+set.seed(701)
+boot(medv,function(vari,index){mean(vari[index])},R=1000)
+```
+The sample std err for the medv was 0.4088611, but the bootstrap returned 0.4110298.  These numbers are almost equal, so they are equally good, but bootstrap is harder to run.
+
+Part(D)
+```{r}
+stdErr = 0.4110298
+lower = mu - 2* stdErr
+upper = mu + 2* stdErr
+lower  
+upper
+t.test(medv)
+```
+the lower bound has a difference of 0.01878, which is very low.  The upper bound has a difference of 0.01879.  Both of these are basically the same because the difference is in the std error, which is then used on both sides.  Overall having so little difference between the two tests just makes it apear like we did the test correctly.
+
+Part(E)
+```{r}
+median(medv)
+boot(medv,function(vari,index){median(vari[index])},R=1000)
+```
+The std.error from the bootstrap is 0.3864933, which gives us a 95% confidence interval for the median is (20.42701, 21.97299)
+```{r}
+mu.1 = quantile(medv, .1)
+mu.1
+boot(medv,function(vari,index){quantile(vari[index], .1)},R=1000)
+```
+the quantile estiamtes a std error for the quantile to be 0.4964767, which is quite a bit higher than the other std errors we calculated today.
+
+
+b.	Using the college football data set, compare the following two models:  
+i.	Y = Zsagarin;   Predictors:  lyzsagarin + Fr5star + Coachexp_school, and 
+ii.	Y = Zsagarin;   Predictors:  lyzsagarin + Fr5star + Fr5star^2 + Coachexp_school + Coachexp_school^2 using:
+•	the validation set approach (you can choose whatever training/test split that you want)
+•	leave one out cross validation
+•	k-fold cross validation (you can choose the level of K that you want)
+
+```{r} 
+college <- read_xlsx("~/Stats2/data/CFB2018completeISLR.xlsx")
+#summary(college)
+attach(college)
+Fr5star2 <- Fr5star^2
+coachexp_school2 <- coachexp_school^2
+first <- lm(Zsagarin ~ z_lysagarin + Fr5star + coachexp_school)
+second <- lm(Zsagarin ~ z_lysagarin + Fr5star + Fr5star2 + coachexp_school + coachexp_school2)
+summary(first)
+summary(second)
+train <- sample(857, 500)
+validation1 <- lm(Zsagarin ~ z_lysagarin + Fr5star + coachexp_school, subset=train)
+validation2 <- lm(Zsagarin ~ z_lysagarin + Fr5star + Fr5star2 + coachexp_school + coachexp_school2, subset = train)
+summary(validation1)
+summary(validation2)
+
+
+
+
+```
+
+
+
+
